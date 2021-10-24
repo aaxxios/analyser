@@ -8,5 +8,7 @@ $cd analyser && python setup.py install
 *The installation includes a command shortcut*
 
 # See scan results for any number of files 
-$analyse file_1 [file_2 ... file_n] 
+$analyse -f file_1 [file_2 ... file_n] 
 
+#Redirect output 
+$analyse -o output.txt -f file_1 [file_2.. file_n] 
