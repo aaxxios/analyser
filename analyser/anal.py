@@ -9,11 +9,10 @@ from enum import Enum
 
 class RegexEnum(Enum):
 	MAIL_REGEX = re.compile(r"([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)")
-
+	
 	URL_REGEX = re.compile(r'(http[s]?://)?www(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
-
+	
 	IPV4_REGEX = re.compile(r"((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])(((\\8|\\16|\\24|))|:([1-9][0-9]*))?")
-
 	MAC_REGEX = re.compile(r"([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})|([0-9a-fA-F]{4}\\.[0-9a-fA-F]{4}\\.[0-9a-fA-F]{4})")
 
 
@@ -22,7 +21,7 @@ details = namedtuple("details", "emails urls ipv4 macs")
 
 
 class UnsupportedFile(Exception):
-	"""this exceptuon is raised when trying to open unsupported files"""
+	"""this exceptuon is raised whrn trying to open unsupported files"""
 	...
 
 
@@ -40,17 +39,17 @@ class Analyser:
 		self.ips = []
 		self.urls = []
 		self.processed = False
-
+		
 	def _validfile(self, name):
 		"""check if name is a valid file"""
 		if not os.path.exists(name):
 			print("Skipping %s: File does not exist" % name)
-			return
+			return 
 		if os.path.isdir(name):
 			print("Skipping %s: Directory" % name)
-			return
+			return 
 		return True
-
+		
 	def _setbuffer(self, buf):
 		"""internal method responsible for prrpating files yo be read"""
 		if isinstance(buf, Sequence) and not isinstance(buf, str):
@@ -71,7 +70,7 @@ class Analyser:
 		elif isinstance(buf, str) and self._validfile(buf):
 			buf = open(buf)
 			return  [buf]
-
+	
 	def summarize(self, internal=False):
 		if self.processed:
 			return self.info()
@@ -98,7 +97,7 @@ class Analyser:
 		if internal:
 			return details(self.emails, self.urls, self.ips, self.macs)
 		self.info()
-
+	
 	def getSummary(self):
 		return self.summarize(internal=True)
 
@@ -109,14 +108,14 @@ class Analyser:
 			return 
 		if not self.output:
 			msg = ["Mails Found", "URLs Found", "Mac Address Found", "IPs Found"]
-			style = ["{:^{}}".format(i, TERM_S) for i in msg]
+			style = ["{:^{}}\n{:^{}}".format(i, TERM_S, "="*len(i), TERM_S) for i in msg]
 			for i in range(len(results)):
 				if not results[i]:
 					continue
 				self._styleprint(results[i], style[i])
-			return
+			return 
 		self.save()
-
+	
 	def _styleprint(self, lst, desc):
 		print(desc)
 		n = len(lst)
@@ -129,7 +128,7 @@ class Analyser:
 			except ValueError:
 				print(lst[-1])
 				break
-
+	
 	def _writer(self, msg, handle):
 		n = len(msg)
 		if n <= 2:
@@ -145,14 +144,19 @@ class Analyser:
 				break
 
 	def scanString(self, string):
-		res = []
+		f = False
 		for regex in RegexEnum:
 			if (match := regex.value.finditer(string)):
 				name = regex.name[:regex.name.find("_")].title() + " Found"
 				m = [m.group() for m in match]
 				if m:
+					adx = "="*len(name)
+					desc = f"{name:^{TERM_S}}\n{adx:^{TERM_S}}"
 					print()
-					self._styleprint(m, name)
+					f = True
+					self._styleprint(m, desc)
+		if not f:
+			print("\nNo details Found😔😔😔!!!")
 
 	def save(self,):
 		with open(self.output, "w") as out:
@@ -168,17 +172,18 @@ class Analyser:
 			if self.urls:
 				out.write("\n\nURLs:\n".center(TERM_S))
 				self._writer(self.urls, out)
+			
 			print("Details saved to %s 😎" % out.name)
 
 
 def isValidEmail(text):
 	return True if RegexEnum.MAIL_REGEX.value.search(text) else False
-
+	
 def isValidURL(text):
 	return True if RegexEnum.URL_REGEX.value.search(text) else False
-
+	
 def isValidMAC(text):
 	return True if RegexEnum.MAC_REGEX.value.search(text) else False
-
+		
 def isValidIP4(text):
 	return True if RegexEnum.IPV4_REGEX.value.search(text) else False
