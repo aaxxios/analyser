@@ -10,5 +10,5 @@ $cd analyser && python setup.py install
 # See scan results for any number of files 
 $analyse -f file_1 [file_2 ... file_n] 
 
-#Redirect output 
+
 $analyse -o output.txt -f file_1 [file_2.. file_n] 
