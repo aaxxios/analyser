@@ -72,6 +72,8 @@ class Analyser:
 			return  [buf]
 	
 	def summarize(self, internal=False):
+		if self.processed and internal:
+			return details(self.emails, self.urls, self.ips, self.macs)
 		if self.processed:
 			return self.info()
 		for file in self._buffer:
@@ -96,7 +98,8 @@ class Analyser:
 		self.processed = True
 		if internal:
 			return details(self.emails, self.urls, self.ips, self.macs)
-		self.info()
+		else:
+			self.info()
 	
 	def getSummary(self):
 		return self.summarize(internal=True)
